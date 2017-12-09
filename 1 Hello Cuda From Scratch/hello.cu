@@ -2,7 +2,7 @@
 
 __global__ void helloFromGPU(void)
 {
-	printf("Hello Cuda 8.0!(From GPU)\n");
+	printf("Hello Cuda 8.0!(From GPU thread no: %d)\n",threadIdx.x);
 }
 
 int main()
