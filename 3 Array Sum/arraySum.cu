@@ -30,10 +30,11 @@ int main()
 	cudaMemcpy(d_x1, h_x1, num * sizeof(float), cudaMemcpyHostToDevice);
 	cudaMemcpy(d_x2, h_x2, num * sizeof(float), cudaMemcpyHostToDevice);
 	cpuSum(h_x1, h_x2, h_y1, num);
-	//To be implemented
+	//Perform array sum in GPU. 
 	dim3 block(2, 2, 2);
 	dim3 grid(2, 2, 2);
-	gpuSum<<<grid, block>>>(d_x1, d_x2, d_y);	
+	gpuSum<<<grid, block>>>(d_x1, d_x2, d_y);
+	cudaDeviceSynchronize(); //Wait for all kernels to complete. 
 	cudaMemcpy(h_y2, d_y, num * sizeof(float), cudaMemcpyDeviceToHost);
 	if(arrEqual(h_y1, h_y2, num))
 		printf("Result from GPU is equal to result from CPU. \n");
@@ -93,6 +94,6 @@ __global__ void gpuSum(float *x1, float*x2, float *y)
 	int threadOffset = threadIdx.x + threadIdx.y * blockDim.x + threadIdx.z * blockDim.x * blockDim.y; //thread in block
 	int blockOffset = blockIdx.x + blockIdx.y * gridDim.x + blockIdx.z * gridDim.x * gridDim.y; //block in grid 
 	int i = blockOffset * blockDim.x * blockDim.y * blockDim.z + threadOffset; 
-	printf("Adding entry no. %d from GPU\n", i);
+	printf("Adding entry no. %d in GPU\n", i);
 	y[i] = x1[i] + x2[i];
 }
