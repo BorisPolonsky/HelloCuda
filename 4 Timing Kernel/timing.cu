@@ -39,20 +39,24 @@ void checkGpuMalloc(cudaError_t code)
 		printf("CUDA ERROR occured. ");
 	}
 }
-void gpuSum(double *h_x1, double *h_x2, double *h_y, int arrSize)
+double gpuSum(double *h_x1, double *h_x2, double *h_y, int arrSize)
 {
 	double *d_x1=NULL, *d_x2=NULL, *d_y=NULL;
+	double tBegin, tEnd;
 	//Pre-allocate memory and check status.
 	checkGpuMalloc(cudaMalloc((void**)&d_x1, arrSize*sizeof(double)));
 	checkGpuMalloc(cudaMalloc((void**)&d_x2, arrSize*sizeof(double)));
 	checkGpuMalloc(cudaMalloc((void**)&d_x2, arrSize*sizeof(double)));
 	cudaMemcpy(d_x1, h_x1, arrSize*sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(d_x2, h_x2, arrSize*sizeof(double), cudaMemcpyHostToDevice);
+	tBegin=cpuSecond();
 	arraySumKernel<<<1,arrSize>>>(d_x1, d_x2, d_y, arrSize);//One block. 
+	tEnd=cpuSecond();
 	cudaMemcpy(h_y, d_y, arrSize*sizeof(double), cudaMemcpyDeviceToHost);
 	cudaFree(d_x1);
 	cudaFree(d_x2);
 	cudaFree(d_y);
+	return (tEnd-tBegin);
 }
 int main()
 {
@@ -73,10 +77,7 @@ int main()
 	cpuSum(h_x1, h_x2, h_y, arrSize);
 	tEnd=cpuSecond();
 	printf("Time cost (CPU computation): %lfs\n", tEnd-tBegin);
-	tBegin=cpuSecond();
-	gpuSum(h_x1, h_x2, h_y, arrSize);
-	tEnd=cpuSecond();
-	printf("Time cost (GPU computation): %lfs\n", tEnd-tBegin);
+	printf("Time cost (GPU computation): %lfs\n", gpuSum(h_x1, h_x2, h_y, arrSize));
 	free(h_x1);
 	free(h_x2);
 	free(h_y);
