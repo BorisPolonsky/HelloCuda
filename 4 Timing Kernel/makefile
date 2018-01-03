@@ -5,5 +5,5 @@ timing.o: timing.cu
 	nvcc -c -arch sm_50 timing.cu
 .PHONY: clean
 
-clean: $(all)
+clean:
 	rm $(all)
