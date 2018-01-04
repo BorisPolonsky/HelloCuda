@@ -87,7 +87,7 @@ int main()
 	cudaMemcpy(d_m2, h_m2, row*column*sizeof(double), cudaMemcpyHostToDevice);
 	printf("Summing matrices on GPU with 2D grid and 2D blocks.\n");
 	_2dGrid2dBlockMatSum<<<(1<<5,1<<5),(1<<5, 1<<5)>>>(d_m1, d_m2, d_n, row, column);
-	//cudaDeviceSynchronize();	
+	cudaDeviceSynchronize();	
 	cudaMemcpy(h_n2, d_n, row*column*sizeof(double), cudaMemcpyDeviceToHost);
 	if(matEqual(h_n1, h_n2, row, column))
 		printf("Matrices match.\n");
