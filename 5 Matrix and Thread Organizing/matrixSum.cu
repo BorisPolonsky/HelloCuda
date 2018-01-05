@@ -62,6 +62,22 @@ void checkGpuMalloc(cudaError_t code)
 	}
 }
 
+void printMatrix(double *mat, const int row, const int column)
+{
+	const int rowToPrint=3;
+	const int columnToPrint=6;
+	for(int i=0;i<rowToPrint;i++)
+	{
+		for(int j=0;j<columnToPrint;j++)
+			printf("%lf", mat[i*column+j]);
+		if(column>columnToPrint)
+			printf("...");
+		printf("\n");
+	}
+	if(row>rowToPrint)
+		printf("...\n");
+}
+
 int main()
 {
 	int row=1<<10, column=1<<10;
@@ -92,7 +108,12 @@ int main()
 	if(matEqual(h_n1, h_n2, row, column))
 		printf("Matrices match.\n");
 	else
-		printf("Matrices don't match.\n");
+	{
+		printf("Matrices don't match.\nResult on CPU:\n");
+		printMatrix(h_n1, row, column);
+		printf("Result on GPU:");
+		printMatrix(h_n2, row, column);
+	}
 	free(h_m1);
 	free(h_m2);
 	free(h_n1);
