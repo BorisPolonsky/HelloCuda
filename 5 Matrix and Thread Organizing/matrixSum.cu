@@ -79,6 +79,17 @@ __global__ void _1dGrid1dBlockMatSum(double *m1, double *m2, double *n, const in
 	}
 }
 
+__global__ void _2dGrid1dBlockMatSum(double *m1, double *m2, double *n, const int row, const int column)
+{
+	int rowIndex = blockIdx.y;
+	int columnIndex = blockIdx.x * blockDim.x + threadIdx.x;
+	if(rowIndex<row&&columnIndex<column)
+	{
+		int i=rowIndex*column+columnIndex;
+		n[i]=m1[i]+m2[i];
+	}
+}
+
 void checkGpuMalloc(cudaError_t code)
 {
 	if(code != cudaSuccess)
@@ -164,7 +175,16 @@ int main()
 	cudaDeviceSynchronize();
 	cudaMemcpy(h_n2, d_n, row*column*sizeof(double), cudaMemcpyDeviceToHost);
 	testResult(h_n1, h_n2, row, column);	
-
+	//2D grid with 1D blocks.
+	cudaMemset(d_n, 0, row*column*sizeof(double));
+	printf("Summing matrices on GPU with 2D grid and 1D blocks.\n");
+	t=cpuSecond();
+	_2dGrid1dBlockMatSum<<<dim3(1<<5,1<<10),dim3(1<<5)>>>(d_m1, d_m2, d_n, row, column);
+	t=cpuSecond()-t;
+	printf("Time cost: %lfs\n", t);
+	cudaDeviceSynchronize();
+	cudaMemcpy(h_n2, d_n, row*column*sizeof(double), cudaMemcpyDeviceToHost);
+	testResult(h_n1, h_n2, row, column);	
 	free(h_m1);
 	free(h_m2);
 	free(h_n1);
