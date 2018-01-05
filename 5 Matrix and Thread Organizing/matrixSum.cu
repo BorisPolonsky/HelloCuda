@@ -1,6 +1,14 @@
 #include "stdio.h"
+#include <sys/time.h> 
 #define FALSE 0
 #define TRUE !FALSE
+
+double cpuSecond()
+{
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+	return((double)tp.tv_sec + (double)tp.tv_usec*1.e-6);
+}
 double *mallocMatrix(const int row, const int column)
 {
 	return (double*)malloc(row*column*sizeof(double));
@@ -82,6 +90,7 @@ int main()
 {
 	int row=1<<10, column=1<<10;
 	double *h_m1=NULL, *h_m2=NULL,*h_n1=NULL, *h_n2=NULL;//n=m1+m2
+	double t=0;
 	h_m1=mallocMatrix(row, column);
 	h_m2=mallocMatrix(row, column);
 	h_n1=mallocMatrix(row, column);
@@ -94,7 +103,10 @@ int main()
 	matrixInit(h_m1,row,column);
 	matrixInit(h_m2,row,column);
 	printf("Summing matrices on CPU...\n");
+	t=cpuSecond();
 	matrixSumCpu(h_m1,h_m2,h_n1,row,column);
+	t=cpuSecond()-t;
+	printf("Time cost: %lfs\n", t);
 	double *d_m1=NULL, *d_m2=NULL, *d_n=NULL;
 	checkGpuMalloc(cudaMalloc((void**)&d_m1, row*column*sizeof(double)));
 	checkGpuMalloc(cudaMalloc((void**)&d_m2, row*column*sizeof(double)));
@@ -102,8 +114,11 @@ int main()
 	cudaMemcpy(d_m1, h_m1, row*column*sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(d_m2, h_m2, row*column*sizeof(double), cudaMemcpyHostToDevice);
 	printf("Summing matrices on GPU with 2D grid and 2D blocks.\n");
+	t=cpuSecond();
 	_2dGrid2dBlockMatSum<<<(1<<5,1<<5),(1<<5, 1<<5)>>>(d_m1, d_m2, d_n, row, column);
-	cudaDeviceSynchronize();	
+	t=cpuSecond()-t;
+	printf("Time cost: %lfs\n", t);
+	cudaDeviceSynchronize();
 	cudaMemcpy(h_n2, d_n, row*column*sizeof(double), cudaMemcpyDeviceToHost);
 	if(matEqual(h_n1, h_n2, row, column))
 		printf("Matrices match.\n");
