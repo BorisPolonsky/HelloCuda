@@ -34,6 +34,7 @@ __global__ void minimalWarpDivergence(double *arr, const int arrSize)
 			arr[i]=i%2;
 	}
 }
+
 int main()
 {
 	const int arrSize=1<<16;
@@ -47,12 +48,14 @@ int main()
 	cudaMemset(d_arr, 0, arrSize*sizeof(double));
 	t=cpuSecond();
 	simpleWarpDivergence<<<1<<8, 1<<8>>>(d_arr,arrSize);
+	cudaDeviceSynchronize();
 	t=cpuSecond()-t;
 	printf("Array initialization with simple warp divergence took %lf s.\n", t);
 
 	cudaMemset(d_arr, 0, arrSize*sizeof(double));
 	t=cpuSecond();
 	minimalWarpDivergence<<<1<<8, 1<<8>>>(d_arr,arrSize);
+	cudaDeviceSynchronize();
 	t=cpuSecond()-t;
 	printf("Array initialization with minimal warp divergence took %lf s.\n", t);
 	cudaFree(d_arr);
