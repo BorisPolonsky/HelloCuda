@@ -5,5 +5,5 @@ arraySum: arraySum.o
 arraySum.o: arraySum.cu
 	nvcc -c -arch sm_50 arraySum.cu
 .PHONY: clean
-clean: $(all) 
+clean:
 	rm $(all) 
