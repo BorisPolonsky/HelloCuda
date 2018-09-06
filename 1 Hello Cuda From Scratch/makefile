@@ -4,7 +4,7 @@ all: hello
 hello : hello.o
 	nvcc hello.o -o hello
 hello.o: hello.cu
-	nvcc -c -arch sm_20 hello.cu
+	nvcc -c -arch sm_50 hello.cu
 .PHONY: clean
 clean:
 	rm $(all)
